@@ -43,14 +43,14 @@ jobs:
             aws deploy register-application-revision \
             --application-name strapi-codedeploy-bhr \
             --description "Registering new revision" \
-            --revision file://appspec.yaml
+            --revision file ="appspec.yaml"
 
       - name: Create CodeDeploy Deployment
         run: |
             aws deploy create-deployment \
             --application-name strapi-codedeploy-bhr \
             --deployment-group-name strapi-codedeploy-group \
-            --revision file://appspec.yaml \
+            --revision file : //appspec.yaml \
             --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
             --description "Deploying new revision"
 
