@@ -45,7 +45,7 @@ jobs:
       id: render-taskdef
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
-           task-definition: .github/ecs-task-def.json
+           task-definition: ecs-task-def.json
            container-name: strapi
            image: "607700977843.dkr.ecr.us-east-2.amazonaws.com/strapi-app:latest"
 
