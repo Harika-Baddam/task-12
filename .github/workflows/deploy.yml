@@ -43,7 +43,18 @@ jobs:
             aws deploy register-application-revision \
             --application-name strapi-codedeploy-bhr \
             --description "Registering new revision" \
-            --revision file ="appspec.yaml"
+            --s3-location bucket=your-bucket-name,key=appspec.yaml,bundleType=yaml
+      - name: Create appspec.yaml
+        run: |
+          echo "version: 1.0" > appspec.yaml
+          echo "Resources:" >> appspec.yaml
+          echo "- TargetService:" >> appspec.yaml
+          echo "    Type: AWS::ECS::Service" >> appspec.yaml
+          echo "    Properties:" >> appspec.yaml
+          echo "      TaskDefinition: arn:aws:iam::607700977843:role/ecsTaskExecutionRole/strapi-task:${{ steps.build.outputs.revision }}" >> appspec.yaml
+          echo "      LoadBalancerInfo:" >> appspec.yaml
+          echo "        ContainerName: strapi" >> appspec.yaml
+          echo "        ContainerPort: 1337" >> appspec.yaml
 
       - name: Create CodeDeploy Deployment
         run: |
