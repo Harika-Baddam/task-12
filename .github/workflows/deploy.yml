@@ -56,6 +56,14 @@ jobs:
           echo "        ContainerName: strapi" >> appspec.yaml
           echo "        ContainerPort: 1337" >> appspec.yaml
 
+      - name: Register AppSpec revision
+        run: |
+          aws deploy register-application-revision \
+          --application-name strapi-codedeploy-app \
+          --description "Registering new revision" \
+          --revision file://appspec.yaml
+
+
       - name: Create CodeDeploy Deployment
         run: |
             aws deploy create-deployment \
@@ -67,6 +75,7 @@ jobs:
             --file-exists-behavior OVERWRITE \
             --ignore-application-stop-failures \
             --description "Deploying new revision"
+
 
 
       - name: (Optional) Monitor Deployment Status
