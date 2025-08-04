@@ -91,7 +91,7 @@ jobs:
         aws deploy register-application-revision \
         --application-name strapi-codedeploy-app \
         --description "Registering new revision" \
-        --revision: 'arn:aws:ecs:us-east-2:607700977843:task-definitio/strapi-task:${{ steps.build.outputs.revision }}'
+        --revision file://appspec.yaml
 
 
     - name: (Optional) Monitor Deployment Status
