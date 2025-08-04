@@ -78,6 +78,19 @@ jobs:
             }}}],
             "requiresCompatibilities": ["FARGATE"],"cpu": "512","memory": "1024"}' > task-def.json
 
+    - name: Render AppSpec file
+      run: |
+        echo "version: 1.0
+        Resources:
+        - TargetService:
+           Type: AWS::ECS::Service
+           Properties:
+             TaskDefinition: \"arn:aws:ecs:us-east-2:607700977843:task-definition/strapi-task:${{ steps.build.outputs.revision }}\"
+             LoadBalancerInfo:
+               ContainerName: \"strapi\"
+               ContainerPort: 1337" > appspec.yaml
+
+
     - name: Create CodeDeploy Application
       run: |
         aws deploy create-application --application-name strapi-codedeploy-app --compute-platform ECS || echo "Application already exists"
