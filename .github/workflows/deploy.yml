@@ -82,13 +82,28 @@ jobs:
       run: |
        aws ecs register-task-definition \
        --cli-input-json file://task-def.json
+    - name: Set Task Revision Output (example)
+      id: build
+      run: echo "revision=183" >> $GITHUB_OUTPUT
 
-    - name: Create CodeDeploy Deployment
+    - name: Generate appspec.yaml
+      run: |
+        echo "version: 1.0
+    Resources:
+    - TargetService:
+        Type: AWS::ECS::Service
+        Properties:
+        TaskDefinition: \"arn:aws:ecs:us-east-2:607700977843:task-definition/strapi-task:${{ steps.build.outputs.revision }}\"
+        LoadBalancerInfo:
+          ContainerName: \"strapi\"
+          ContainerPort: 1337" > appspec.yaml
+
+    - name: Register App Revision
       run: |
         aws deploy register-application-revision \
         --application-name strapi-app \
         --revision fileb://appspec.yaml \
-        --description "Deploy task revision ${{ steps.build.outputs.revision }}"
+        --description "Deploy revision ${{ steps.build.outputs.revision }}"
 
 
     - name: (Optional) Monitor Deployment Status
