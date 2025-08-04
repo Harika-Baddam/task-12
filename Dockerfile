@@ -9,11 +9,14 @@ COPY package*.json ./
 # Install Strapi dependencies
 RUN npm install strapi@latest --legacy-peer-deps
 
+#copy the rest of the application code
+COPY . .
 
-# Copy and set env vars
-COPY .env .env
+# Install application dependencies
+ENV NODE_ENV=production
+ENV DATABASE_CLIENT=sqlite
+ENV DATABASE_FILENAME=.tmp/data.db
 
-# Run build
 RUN npm run build
 
 
