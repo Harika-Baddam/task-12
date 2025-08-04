@@ -90,6 +90,7 @@ jobs:
       run: |
         aws deploy register-application-revision \
         --application-name strapi-app \
+        --description "Registering new revision"
         --revision fileb://appspec.yaml \
         --description "Deploy task revision ${{ steps.build.outputs.revision }}"
 
