@@ -86,11 +86,10 @@ jobs:
     - name: Create CodeDeploy Deployment
       run: |
         aws deploy create-deployment \
-          --application-name ${{ env.CODE_DEPLOY_APP }} \
-          --deployment-group-name ${{ env.DEPLOYMENT_GROUP }} \
-          --revision revisionType=AppSpecContent,appSpecContent={"content":"version: 1.0\nResources:\n  - TargetService:\n      Type: AWS::ECS::Service\n      Properties:\n        TaskDefinition: ${{ env.TASK_DEF_ARN }}\n        LoadBalancerInfo:\n          ContainerName: \"strapi\"\n          ContainerPort: 1337"} \
-          --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
-          --region us-east-2
+        --application-name your-codedeploy-app \
+        --deployment-group-name your-deployment-group \
+        --revision "revisionType=AppSpecContent,appSpecContent={\"content\": \"$(cat appspec.yaml | sed ':a;N;$!ba;s/\\n/\\\\n/g')\"}" \
+        --deployment-config-name CodeDeployDefault.ECSAllAtOnce
 
     - name: (Optional) Monitor Deployment Status
       run: |
