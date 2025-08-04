@@ -88,9 +88,10 @@ jobs:
         aws deploy create-deployment \
         --application-name your-codedeploy-app \
         --deployment-group-name your-deployment-group \
-        --revision file://appspec.yml \
-        --region $"us-east-2" \
+        --revision "revisionType=AppSpecContent,appSpecContent={\"content\":\"version: 1.0\\nResources:\\n  - TargetService:\\n      Type: AWS::ECS::Service\\n      Properties:\\n        TaskDefinition: arn:aws:ecs:us-east-2:607700977843:task-definition/strapi-task:183\\n        LoadBalancerInfo:\\n          ContainerName: \\\"strapi\\\"\\n          ContainerPort: 1337\"}"
+        --region us-east-2 \
         --deployment-config-name CodeDeployDefault.ECSAllAtOnce
+
 
 
     - name: (Optional) Monitor Deployment Status
