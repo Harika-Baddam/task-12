@@ -14,11 +14,10 @@ ENV DATABASE_SSL=false
  
 #--------Copying Local App directory--------------
 WORKDIR /strapi/
-COPY . /strapi/
+COPY . .
  
 #--------Installing dependencies--------------
-RUN npm install --verbose
-RUN npm run build --verbose
+RUN npm install --no-optional --legacy-peer-deps
  
 EXPOSE 1337
  
