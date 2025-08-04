@@ -17,92 +17,55 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
 
-    - name: Checkout source
-      uses: actions/checkout@v3
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
 
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-2
+      - name: Login to Amazon ECR
+        run: aws ecr get-login-password | docker login --username AWS --password-stdin 607700977843.dkr.ecr.us-east-2.amazonaws.com
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v2
+      - name: Build, Tag, and Push Docker Image
+        id: build
+        run: |
+          docker build -t strapi .
+          docker tag strapi:latest 607700977843.dkr.ecr.us-east-2.amazonaws.com/strapi:latest
+          docker push 607700977843.dkr.ecr.us-east-2.amazonaws.com/strapi:latest
+          echo "revision=$(date +%s)" >> $GITHUB_OUTPUT
 
-    - name: Build, Tag, and Push Docker Image
-      env:
-        IMAGE_TAG: ${{ github.sha }}
-      run: |
-        IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
-        docker build -t $IMAGE_URI .
-        docker push $IMAGE_URI
-        echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
-
-    - name: Render new ECS Task Definition with new image
-      id: render-taskdef
-      uses: aws-actions/amazon-ecs-render-task-definition@v1
-      with:
-       task-definition: ecs-task-def.json
-       container-name: strapi
-       image: ${{ env.IMAGE_URI }}
-
-    - name: Render ECS task definition
-      run: |
-           echo '{
-           "family": "strapi-task",
-           "networkMode": "awsvpc",
-           "executionRoleArn": "arn:aws:iam::607700977843:role/ecsTaskExecutionRole",
-           "containerDefinitions": [
-           {
-            "name": "strapi",
-            "image": "607700977843.dkr.ecr.us-east-2.amazonaws.com/strapi-app:latest",
-            "cpu": 0,
-            "memory": 512,
-            "essential": true,
-            "portMappings": [
-              {
-                "containerPort": 1337,
-                "hostPort": 1337,
-                "protocol": "tcp"
-              }
-            ], 
-              "logConfiguration": {
-              "logDriver": "awslogs",
-              "options": {
-              "awslogs-group": "/ecs/strapi",
-              "awslogs-region": "us-east-2",
-              "awslogs-stream-prefix": "strapi"
-            }}}],
-            "requiresCompatibilities": ["FARGATE"],"cpu": "512","memory": "1024"}' > task-def.json
-
-    - name: Render AppSpec file
-      run: |
-        echo "version: 1.0
-        Resources:
-        - TargetService:
-           Type: AWS::ECS::Service
-           Properties:
+      - name: Render AppSpec file
+        run: |
+          echo "version: 1.0
+          Resources:
+          - TargetService:
+            Type: AWS::ECS::Service
+             Properties:
              TaskDefinition: \"arn:aws:ecs:us-east-2:607700977843:task-definition/strapi-task:${{ steps.build.outputs.revision }}\"
-             LoadBalancerInfo:
-               ContainerName: \"strapi\"
-               ContainerPort: 1337" > appspec.yaml
+              LoadBalancerInfo:
+              ContainerName: \"strapi\"
+              ContainerPort: 1337" > appspec.yaml
 
+      - name: Register AppSpec revision
+        run: |
+          aws deploy register-application-revision \
+            --application-name strapi-codedeploy-app \
+            --description "Registering new revision" \
+            --revision file://appspec.yaml
 
-    - name: Create CodeDeploy Application
-      run: |
-        aws deploy create-application --application-name strapi-codedeploy-app --compute-platform ECS || echo "Application already exists"
-
-    - name: Create CodeDeploy Deployment
-      run: |
-        aws deploy register-application-revision \
-        --application-name strapi-codedeploy-app \
-        --description "Registering new revision" \
-        --revision file://appspec.yaml
-
-    - name: (Optional) Monitor Deployment Status
-      run: |
-        echo "Deployment created successfully with new image: 607700977843.dkr.ecr.us-east-2.amazonaws.com/strapi-app:latest"
-        # Add polling logic here if needed for prod deployments
+      - name: Create CodeDeploy Deployment
+        run: |
+          aws deploy create-deployment \
+            --application-name strapi-codedeploy-app \
+            --deployment-group-name strapi-codedeploy-group \
+            --revision file://appspec.yaml \
+            --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
+            --description "Deploying new revision"
+      - name: (Optional) Monitor Deployment Status
+        run: |
+          echo "Deployment created successfully with new image: 607700977843.dkr.ecr.us-east-2.amazonaws.com/strapi-app:latest"
+          # Add polling logic here if needed for prod deployments
