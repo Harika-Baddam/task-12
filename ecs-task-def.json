@@ -8,7 +8,7 @@
   "containerDefinitions": [
     {
       "name": "strapi",
-      "image": "dummy",  // This gets replaced automatically
+      "image": "dummy", 
       "portMappings": [
         {
           "containerPort": 1337,
