@@ -17,7 +17,7 @@ WORKDIR /strapi/
 COPY . .
  
 #--------Installing dependencies--------------
-RUN npm install --no-optional --legacy-peer-deps
+RUN npm install
  
 EXPOSE 1337
  
