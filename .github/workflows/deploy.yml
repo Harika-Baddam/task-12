@@ -7,7 +7,7 @@ on:
 env:
   AWS_REGION: us-east-2
   ECR_REPOSITORY: projects-bhr
-  ECS_CLUSTER: strapi-cluster
+  ECS_CLUSTER: strapi-cluster-bhr
   ECS_SERVICE: strapi-service
   TASK_DEF_FAMILY: strapi-task
   CODE_DEPLOY_APP: strapi-codedeploy-app
@@ -49,23 +49,23 @@ jobs:
         container-name: strapi
         image: ${{ env.IMAGE_URI }}
 
-    - name: Register new ECS Task Definition
+    - name: Register new ECS Task Definition via CLI
       id: register-taskdef
-      uses: aws-actions/amazon-ecs-register-task-definition@v1
-      with:
-        task-definition: ${{ steps.render-taskdef.outputs.task-definition }}
+      run: |
+        echo "${{ steps.render-taskdef.outputs.task-definition }}" > taskdef.json
+        TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://taskdef.json --query 'taskDefinition.taskDefinitionArn' --output text)
+        echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
 
     - name: Create CodeDeploy Deployment
-      id: codedeploy
       run: |
         aws deploy create-deployment \
-          --application-name strapi-app \
+          --application-name ${{ env.CODE_DEPLOY_APP }} \
           --deployment-group-name ${{ env.DEPLOYMENT_GROUP }} \
-          --revision revisionType=AppSpecContent,appSpecContent={"content":"version: 1.0\nResources:\n  - TargetService:\n      Type: AWS::ECS::Service\n      Properties:\n        TaskDefinition: ${{ steps.register-taskdef.outputs.task-definition-arn }}\n        LoadBalancerInfo:\n          ContainerName: \"strapi\"\n          ContainerPort: 1337"} \
+          --revision revisionType=AppSpecContent,appSpecContent={"content":"version: 1.0\nResources:\n  - TargetService:\n      Type: AWS::ECS::Service\n      Properties:\n        TaskDefinition: ${{ env.TASK_DEF_ARN }}\n        LoadBalancerInfo:\n          ContainerName: \"strapi\"\n          ContainerPort: 1337"} \
           --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
           --region us-east-2
 
     - name: (Optional) Monitor Deployment Status
       run: |
-        echo "Deployment created: ${{ steps.codedeploy.outputs.deployment-id }}"
-        # Optional: use describe-deployment + polling here for prod monitoring
+        echo "Deployment created successfully with new image: ${{ env.IMAGE_URI }}"
+        # Add polling logic here if needed for prod deployments
