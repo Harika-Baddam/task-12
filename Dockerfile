@@ -1,25 +1,21 @@
-FROM node:22-alpine
- 
-ARG NODE_ENV=development
-ENV NODE_ENV=${NODE_ENV}
- 
-# -------- ENV for database config --------
-ENV DATABASE_CLIENT=mysql
-ENV DATABASE_HOST=mysql
-ENV DATABASE_PORT=3306
-ENV DATABASE_NAME=strapi
-ENV DATABASE_USERNAME=strapi
-ENV DATABASE_PASSWORD=password
-ENV DATABASE_SSL=false
- 
-#--------Copying Local App directory--------------
-WORKDIR /strapi/
-COPY . /strapi/
- 
-#--------Installing dependencies--------------
-RUN npm install 
- 
+# Use an official Node image
+FROM node:20-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies
+COPY package.json package-lock.json ./
+RUN npm install
+
+# Install pg (PostgreSQL driver) only if needed
+# RUN npm install pg
+
+# Copy rest of the app
+COPY . .
+
+# Build the app (for Strapi)
+RUN npm run build
+
 EXPOSE 1337
- 
-CMD ["npm", "run", "develop"]
- 
+CMD ["npm", "start"]
