@@ -1,25 +1,25 @@
-# Use Debian-based Node image
-FROM node:20
-
-WORKDIR /app
-
-# Copy dependency files first
-COPY package*.json ./
-
-# Install Strapi dependencies
-RUN npm install strapi@latest --legacy-peer-deps
-
-#copy the rest of the application code
-COPY . .
-
-# Install application dependencies
-ENV NODE_ENV=production
-ENV DATABASE_CLIENT=sqlite
-ENV DATABASE_FILENAME=.tmp/data.db
-
-RUN npm run build
-
-
+FROM node:22-alpine
+ 
+ARG NODE_ENV=development
+ENV NODE_ENV=${NODE_ENV}
+ 
+# -------- ENV for database config --------
+ENV DATABASE_CLIENT=postgress
+ENV DATABASE_HOST=127.0.0.1
+ENV DATABASE_PORT=5432
+ENV DATABASE_NAME=strapi
+ENV DATABASE_USERNAME=strapi
+ENV DATABASE_PASSWORD=password
+ENV DATABASE_SSL=false
+ 
+#--------Copying Local App directory--------------
+WORKDIR /strapi/
+COPY . /strapi/
+ 
+#--------Installing dependencies--------------
+RUN npm install 
+ 
 EXPOSE 1337
-
-CMD ["npm", "start"]
+ 
+CMD ["npm", "run", "develop"]
+ 
