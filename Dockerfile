@@ -16,9 +16,6 @@ ENV DATABASE_SSL=false
 WORKDIR /strapi/
 COPY . .
  
-#--------Installing dependencies--------------
-RUN npm install
- 
 EXPOSE 1337
  
 CMD ["npm", "run", "develop"]
