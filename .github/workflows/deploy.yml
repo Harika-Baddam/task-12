@@ -43,11 +43,11 @@ jobs:
 
     - name: Render new ECS Task Definition with new image
       id: render-taskdef
-      uses: aws-actions/amazon-ecs-task-def@v1
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
         task-definition: ecs-task-def.json
         container-name: strapi
-        image: ${{ env.IMAGE_URI }}
+        image: "607700977843.dkr.ecr.us-east-2.amazonaws.com/strapi-app:latest"
 
     - name: Register new ECS Task Definition via CLI
       id: register-taskdef
@@ -67,5 +67,5 @@ jobs:
 
     - name: (Optional) Monitor Deployment Status
       run: |
-        echo "Deployment created successfully with new image: ${{ env.IMAGE_URI }}"
+        echo "Deployment created successfully with new image: 607700977843.dkr.ecr.us-east-2.amazonaws.com/strapi-app:latest"
         # Add polling logic here if needed for prod deployments
