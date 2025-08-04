@@ -33,24 +33,10 @@ jobs:
       - name: Build, Tag, and Push Docker Image
         id: build
         run: |
-          docker build -t strapi .
-          docker tag strapi:latest 607700977843.dkr.ecr.us-east-2.amazonaws.com/strapi:latest
+          docker build -t strapi-app .
+          docker tag baddamharika/strapi-app:latest 607700977843.dkr.ecr.us-east-2.amazonaws.com/strapi:latest
           docker push 607700977843.dkr.ecr.us-east-2.amazonaws.com/strapi:latest
           echo "revision=$(date +%s)" >> $GITHUB_OUTPUT
-
-      - name: Render AppSpec file
-        run: |
-          cat <<EOF > appspec.yaml
-           version: 1.0
-           Resources:
-            - TargetService:
-              Type: AWS::ECS::Service
-              Properties:
-               TaskDefinition: arn:aws:ecs:us-east-2:607700977843:task-definition/strapi-task:${{ steps.build.outputs.revision }}
-               LoadBalancerInfo:
-                 ContainerName: strapi
-                 ContainerPort: 1337
-            EOF
 
       - name: Register AppSpec revision
         run: |
