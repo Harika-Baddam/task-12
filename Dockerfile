@@ -10,11 +10,11 @@ COPY package*.json ./
 RUN npm install strapi@latest --legacy-peer-deps
 
 
-# Copy app source code
-COPY . .
+# Copy and set env vars
+COPY .env .env
 
-# Build Strapi admin panel
-RUN npm run build --verbose
+# Run build
+RUN npm run build
 
 
 EXPOSE 1337
