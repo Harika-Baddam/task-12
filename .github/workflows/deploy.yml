@@ -48,14 +48,35 @@ jobs:
        task-definition: ecs-task-def.json
        container-name: strapi
        image: ${{ env.IMAGE_URI }}
-       
+
     - name: Render ECS task definition
       run: |
-       echo '{
-       "family": "strapi-task",
-       "executionRoleArn": "arn:aws:iam::607700977843:role/ecsTaskExecutionRole",
-        ...
-       }' > task-def.json
+           echo '{
+           "family": "strapi-task",
+           "networkMode": "awsvpc",
+           "executionRoleArn": "arn:aws:iam::607700977843:role/ecsTaskExecutionRole",
+           "containerDefinitions": [
+           {
+            "name": "strapi",
+            "image": "your-ecr-image-uri",
+            "cpu": 0,
+            "memory": 512,
+            "essential": true,
+            "portMappings": [
+              {
+                "containerPort": 1337,
+                "hostPort": 1337,
+                "protocol": "tcp"
+              }
+            ], 
+              "logConfiguration": {
+              "logDriver": "awslogs",
+              "options": {
+              "awslogs-group": "/ecs/strapi",
+              "awslogs-region": "us-east-2",
+              "awslogs-stream-prefix": "strapi"
+            }}}],
+            "requiresCompatibilities": ["FARGATE"],"cpu": "512","memory": "1024"}' > task-def.json
 
     - name: Register ECS task definition
       run: |
