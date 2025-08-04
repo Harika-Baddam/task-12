@@ -5,14 +5,14 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Install dependencies
-COPY ./strapi/package*.json ./
+COPY package*.json ./
 RUN npm install
 
 # Install pg (PostgreSQL driver) only if needed
 # RUN npm install pg
 
 # Copy rest of the app
-COPY ./strapi ./
+COPY . .
 
 # Build the app (for Strapi)
 RUN npm run build
