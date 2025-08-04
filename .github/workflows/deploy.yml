@@ -85,11 +85,10 @@ jobs:
 
     - name: Create CodeDeploy Deployment
       run: |
-        aws deploy create-deployment \
-        --application-name your-codedeploy-app \
-        --deployment-group-name your-deployment-group \
-        --revision "revisionType=AppSpecContent,appSpecContent={\"content\":\"version: 1.0\\nResources:\\n  - TargetService:\\n      Type: AWS::ECS::Service\\n      Properties:\\n        TaskDefinition: arn:aws:ecs:us-east-2:607700977843:task-definition/strapi-task:183\\n        LoadBalancerInfo:\\n          ContainerName: \\\"strapi\\\"\\n          ContainerPort: 1337\"}"
-        --deployment-config-name CodeDeployDefault.ECSAllAtOnce
+        aws deploy register-application-revision \
+        --application-name strapi-app \
+        --revision fileb://appspec.yaml \
+        --description "Register revision using appspec.yaml"
 
 
     - name: (Optional) Monitor Deployment Status
