@@ -88,8 +88,9 @@ jobs:
         aws deploy create-deployment \
         --application-name your-codedeploy-app \
         --deployment-group-name your-deployment-group \
-        --revision "revisionType=AppSpecContent,appSpecContent={\"content\": \"$(cat appspec.yaml | sed ':a;N;$!ba;s/\\n/\\\\n/g')\"}" \
+        --revision "revisionType=AppSpecContent,appSpecContent={\"content\":\"$(cat appspec.yaml | sed ':a;N;$!ba;s/\\n/\\\\n/g')\"}" \
         --deployment-config-name CodeDeployDefault.ECSAllAtOnce
+
 
     - name: (Optional) Monitor Deployment Status
       run: |
