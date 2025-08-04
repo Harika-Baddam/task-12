@@ -88,7 +88,7 @@ jobs:
         aws deploy register-application-revision \
         --application-name strapi-app \
         --revision fileb://appspec.yaml \
-        --description "AppSpec for Strapi task 183"
+        --description "Deploy task revision ${{ steps.build.outputs.revision }}"
 
 
     - name: (Optional) Monitor Deployment Status
