@@ -48,15 +48,19 @@ jobs:
        task-definition: ecs-task-def.json
        container-name: strapi
        image: ${{ env.IMAGE_URI }}
-
-
-    - name: Register new ECS Task Definition via CLI
-      id: register-taskdef
+       
+    - name: Render ECS task definition
       run: |
-        aws ecs register-task-definition --cli-input-json file://"D:\internship\Task-12\ecs-task-def.json"
-        echo "${{ steps.render-taskdef.outputs.task-definition }}" > ecs-task-def.json
-        TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://ecs-task-def.json --query 'taskDefinition.taskDefinitionArn' --output text)
-        echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
+       echo '{
+       "family": "strapi-task",
+       "executionRoleArn": "arn:aws:iam::607700977843:role/ecsTaskExecutionRole",
+        ...
+       }' > task-def.json
+
+    - name: Register ECS task definition
+      run: |
+       aws ecs register-task-definition \
+       --cli-input-json file://task-def.json
 
     - name: Create CodeDeploy Deployment
       run: |
