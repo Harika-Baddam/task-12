@@ -17,7 +17,8 @@ WORKDIR /strapi/
 COPY . /strapi/
  
 #--------Installing dependencies--------------
-RUN npm install 
+RUN npm install --nocache --no-audit --progress=false --prefer-offline
+RUN npm run build --verbose
  
 EXPOSE 1337
  
