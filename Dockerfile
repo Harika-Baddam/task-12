@@ -1,21 +1,17 @@
-# Use an official Node image
 FROM node:20-alpine
 
-# Set working directory
 WORKDIR /app
 
-# Install dependencies
+# Copy dependencies file and install
 COPY package*.json ./
 RUN npm install
 
-# Install pg (PostgreSQL driver) only if needed
-# RUN npm install pg
-
-# Copy rest of the app
+# Copy the rest of the app
 COPY . .
 
-# Build the app (for Strapi)
+# Build Strapi admin panel
 RUN npm run build
 
 EXPOSE 1337
+
 CMD ["npm", "start"]
