@@ -45,9 +45,9 @@ jobs:
       id: render-taskdef
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
-        task-definition: D:/internship/task-12/ecs-task-def.json
-        container-name: strapi
-        image: "607700977843.dkr.ecr.us-east-2.amazonaws.com/strapi-app:latest"
+           task-definition: .github/ecs/ecs-task-def.json
+           container-name: strapi
+           image: "607700977843.dkr.ecr.us-east-2.amazonaws.com/strapi-app:latest"
 
     - name: Register new ECS Task Definition via CLI
       id: register-taskdef
