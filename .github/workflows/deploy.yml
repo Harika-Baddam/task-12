@@ -55,10 +55,20 @@ jobs:
           echo "      LoadBalancerInfo:" >> appspec.yaml
           echo "        ContainerName: strapi" >> appspec.yaml
           echo "        ContainerPort: 1337" >> appspec.yaml
+            echo "      Cluster: strapi-cluster-bhr" >> appspec.yaml
+            echo "      ServiceName: strapi-service" >> appspec.yaml
+            echo "      DesiredCount: 1" >> appspec.yaml
+            echo "      LaunchType: FARGATE" >> appspec.yaml
+            echo "      NetworkConfiguration:" >> appspec.yaml
+            echo "        AwsvpcConfiguration:" >> appspec.yaml
+            echo "          Subnets:" >> appspec.yaml
+
 
 
       - name: Create CodeDeploy Deployment
         run: |
+            echo "Creating deployment with new image: 607700977843.dkr.ecr.us-east-2.amazonaws.com/strapi-app:latest"
+            echo "Using Task Definition: arn:aws:iam::607700977843:role/ecsTaskExecutionRole/strapi-task:${{ steps.build.outputs.revision }}
             aws deploy create-deployment \
             --application-name strapi-codedeploy-bhr \
             --deployment-group-name strapi-codedeploy-group \
