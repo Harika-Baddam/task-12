@@ -33,7 +33,7 @@ jobs:
       - name: Build, Tag, and Push Docker Image
         id: build
         run: |
-          docker build -t strapi-app .
+          docker build -t baddamharika/strapi-app .
           docker tag baddamharika/strapi-app:latest 607700977843.dkr.ecr.us-east-2.amazonaws.com/strapi:latest
           docker push 607700977843.dkr.ecr.us-east-2.amazonaws.com/strapi:latest
           echo "revision=$(date +%s)" >> $GITHUB_OUTPUT
