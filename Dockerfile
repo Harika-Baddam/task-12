@@ -14,7 +14,8 @@ RUN npm install strapi@latest --legacy-peer-deps
 COPY . .
 
 # Build Strapi admin panel
-RUN npm run build
+RUN npm run build --verbose
+
 
 EXPOSE 1337
 
