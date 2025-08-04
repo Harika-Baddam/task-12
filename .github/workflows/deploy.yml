@@ -82,7 +82,7 @@ jobs:
       run: |
        aws ecs register-task-definition \
        --cli-input-json file://task-def.json
-    - name: Set Task Revision Output (example)
+    - name: Set Task Revision Output 
       id: build
       run: echo "revision=183" >> $GITHUB_OUTPUT
 
