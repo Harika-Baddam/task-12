@@ -62,8 +62,12 @@ jobs:
             --application-name strapi-codedeploy-bhr \
             --deployment-group-name strapi-codedeploy-group \
             --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
+            --revision file://appspec.yaml \
+            --s3-location bucket=your-bucket-name,key=appspec.yaml,bundleType=yaml \
+            --file-exists-behavior OVERWRITE \
+            --ignore-application-stop-failures \
             --description "Deploying new revision"
-            
+
 
       - name: (Optional) Monitor Deployment Status
         run: |
