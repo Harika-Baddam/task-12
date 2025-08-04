@@ -17,7 +17,7 @@ WORKDIR /strapi/
 COPY . /strapi/
  
 #--------Installing dependencies--------------
-RUN npm install && npm install pg --save
+RUN npm install 
  
 EXPOSE 1337
  
