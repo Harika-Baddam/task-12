@@ -61,9 +61,9 @@ jobs:
             aws deploy create-deployment \
             --application-name strapi-codedeploy-bhr \
             --deployment-group-name strapi-codedeploy-group \
-            --revision file : //appspec.yaml \
             --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
             --description "Deploying new revision"
+            
 
       - name: (Optional) Monitor Deployment Status
         run: |
