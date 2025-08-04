@@ -43,7 +43,7 @@ jobs:
 
     - name: Render new ECS Task Definition with new image
       id: render-taskdef
-      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      uses: aws-actions/amazon-ecs-task-def@v1
       with:
         task-definition: ecs-task-def.json
         container-name: strapi
