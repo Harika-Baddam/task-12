@@ -77,10 +77,6 @@ jobs:
               "awslogs-stream-prefix": "strapi"
             }}}],
             "requiresCompatibilities": ["FARGATE"],"cpu": "512","memory": "1024"}' > task-def.json
-            
-    - name: Set Task Revision Output 
-      id: build
-      run: echo "revision=183" >> $GITHUB_OUTPUTS
 
     - name: Create CodeDeploy Application
       run: |
