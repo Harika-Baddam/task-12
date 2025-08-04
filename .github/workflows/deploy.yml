@@ -10,7 +10,7 @@ env:
   ECS_CLUSTER: strapi-cluster-bhr
   ECS_SERVICE: strapi-service
   TASK_DEF_FAMILY: strapi-task
-  CODE_DEPLOY_APP: strapi-codedeploy-app
+  CODE_DEPLOY_APP: strapi-codedeploy-bhr
   DEPLOYMENT_GROUP: strapi-deployment-group
 
 jobs:
@@ -41,14 +41,14 @@ jobs:
       - name: Register AppSpec revision
         run: |
             aws deploy register-application-revision \
-            --application-name strapi-codedeploy-app \
+            --application-name strapi-codedeploy-bhr \
             --description "Registering new revision" \
             --revision file://appspec.yaml
 
       - name: Create CodeDeploy Deployment
         run: |
             aws deploy create-deployment \
-            --application-name strapi-codedeploy-app \
+            --application-name strapi-codedeploy-bhr \
             --deployment-group-name strapi-codedeploy-group \
             --revision file://appspec.yaml \
             --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
