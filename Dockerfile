@@ -1,13 +1,18 @@
-FROM node:20-alpine
+# Use Debian-based Node image
+FROM node:20
 
 WORKDIR /app
 
-# Copy dependencies file and install
+# Copy dependency files first
 COPY package*.json ./
-RUN apt-get update && apt-get install -y python3 make g++ && npm install
 
+# Install system libraries and dependencies
+RUN apt-get update && apt-get install -y python3 make g++ \
+  && npm install \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
-# Copy the rest of the app
+# Copy app source code
 COPY . .
 
 # Build Strapi admin panel
