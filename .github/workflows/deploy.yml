@@ -58,7 +58,7 @@ jobs:
            "containerDefinitions": [
            {
             "name": "strapi",
-            "image": "your-ecr-image-uri",
+            "image": "607700977843.dkr.ecr.us-east-2.amazonaws.com/strapi-app:latest",
             "cpu": 0,
             "memory": 512,
             "essential": true,
@@ -77,14 +77,14 @@ jobs:
               "awslogs-stream-prefix": "strapi"
             }}}],
             "requiresCompatibilities": ["FARGATE"],"cpu": "512","memory": "1024"}' > task-def.json
-
-    - name: Register ECS task definition
-      run: |
-       aws ecs register-task-definition \
-       --cli-input-json file://task-def.json
+            
     - name: Set Task Revision Output 
       id: build
-      run: echo "revision=183" >> $GITHUB_OUTPUT
+      run: echo "revision=183" >> $GITHUB_OUTPUTS
+
+    - name: Create CodeDeploy Application
+      run: |
+        aws deploy create-application --application-name strapi-codedeploy-app --compute-platform ECS || echo "Application already exists"
 
     - name: Create CodeDeploy Deployment
       run: |
@@ -92,7 +92,6 @@ jobs:
         --application-name strapi-codedeploy-app \
         --description "Registering new revision" \
         --revision file://appspec.yaml
-
 
     - name: (Optional) Monitor Deployment Status
       run: |
