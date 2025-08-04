@@ -88,7 +88,8 @@ jobs:
         aws deploy create-deployment \
         --application-name your-codedeploy-app \
         --deployment-group-name your-deployment-group \
-        --revision "revisionType=AppSpecContent,appSpecContent={\"content\":\"$(cat appspec.yml | sed ':a;N;$!ba;s/\\n/\\\\n/g')\"}" \
+        --revision file://appspec.yml \
+        --region $"us-east-2" \
         --deployment-config-name CodeDeployDefault.ECSAllAtOnce
 
 
