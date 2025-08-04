@@ -17,7 +17,7 @@ WORKDIR /strapi/
 COPY . /strapi/
  
 #--------Installing dependencies--------------
-RUN npm install --nocache --no-audit --progress=false --prefer-offline
+RUN npm install strapi@4.11.0 --legacy-peer-deps
 RUN npm run build --verbose
  
 EXPOSE 1337
