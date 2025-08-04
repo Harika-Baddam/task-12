@@ -11,3 +11,11 @@ Resources:
       ServiceName: "strapi-service"
       DesiredCount: 1
       LaunchType: "FARGATE"
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets:
+          - "subnet-aws_subnet.public1.id" # Replace with your subnet ID
+          - "subnet-aws_subnet.public2.id" # Replace with your subnet ID
+          SecurityGroups:
+          - "sg-xxxxx" # Replace with your security group ID
+          AssignPublicIp: ENABLED
