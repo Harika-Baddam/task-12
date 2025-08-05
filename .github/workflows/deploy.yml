@@ -75,6 +75,7 @@ jobs:
 
       - name: Deploy to ECS via CodeDeploy
         run: |
+          echo "creating deployment group if not exists"
           echo "Deploying to ECS with task definition: $TASK_DEF_ARN"
             aws deploy create-deployment-group \
             --application-name strapi-codedeploy-bhr \
