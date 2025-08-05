@@ -82,10 +82,18 @@ jobs:
           }
           EOF
       - name: Register new task definition
-        id: register-task
         run: |
-          TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://ecs-task-def.json --query 'taskDefinition.taskDefinitionArn' --output text)
-          echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
+           new_revision_number=$(date +%s)
+           echo "New revision number: $new_revision_number"
+
+           aws ecs register-task-definition \
+           --cli-input-json file://ecs-task-def.json
+
+           aws ecs update-service \
+           --cluster strapi-cluster-bhr \
+           --service strapi-service \
+            --task-definition strapi-task
+
        
       - name: Generate appspec file
         run: |
