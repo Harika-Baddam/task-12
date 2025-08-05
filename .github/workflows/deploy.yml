@@ -48,6 +48,12 @@ jobs:
             --query "taskDefinition.taskDefinitionArn" \
             --output text)
           echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
+
+    - name: Get new image tag (commit SHA)
+      id: new_tag
+      run: echo "tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+
     - name: Generate AppSpec file for CodeDeploy
       run: |
           cat <<EOF > appspec.yaml
