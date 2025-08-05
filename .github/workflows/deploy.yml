@@ -36,46 +36,39 @@ jobs:
       run: |
           docker build -t 607700977843.dkr.ecr.us-east-2.amazonaws.com/projects-bhr:latest .
           docker push 607700977843.dkr.ecr.us-east-2.amazonaws.com/projects-bhr:latest
-    - name: Create new Task Definition from Template
-      run: |
-          sed "s|IMAGE_PLACEHOLDER|${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}|" ecs-task-def.json > task-def-filled.json
 
-    - name: Register Task Definition
-      id: register-task
-      run: |
-          TASK_DEF_ARN=$(aws ecs register-task-definition \
-            --cli-input-json file://task-def-filled.json \
-            --query "taskDefinition.taskDefinitionArn" \
-            --output text)
-          echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
 
     - name: Get new image tag (commit SHA)
       id: new_tag
       run: echo "tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
-
-    - name: Generate AppSpec file for CodeDeploy
+    - name: Register new ECS task definition
+      id: task_def
       run: |
-          cat <<EOF > appspec.yaml
-          version: 1.0
-          Resources:
+        task_def=$(aws ecs register-task-definition \
+          --cli-input-json file://ecs-task-def.json \
+          --query "taskDefinition.taskDefinitionArn" --output text)
+        echo "TASK_DEF_ARN=$task_def" >> "$GITHUB_ENV"
+    - name: Create appspec.yaml
+      run: |
+        cat <<EOF > appspec.yaml
+        version: 1.0
+        Resources:
           - TargetService:
-            Type: AWS::ECS::Service
-            Properties:
-            TaskDefinition: $TASK_DEF_ARN
-            LoadBalancerInfo:
-               ContainerName: ${CONTAINER_NAME}
-               ContainerPort: 1337
-               EOF
+              Type: AWS::ECS::Service
+              Properties:
+                TaskDefinition: ${TASK_DEF_ARN}
+                LoadBalancerInfo:
+                  ContainerName: "${{ env.CONTAINER_NAME }}"
+                  ContainerPort: ${{ env.CONTAINER_PORT }}
+        EOF
+         base64 appspec.yaml | tr -d '\n'
      
     - name: Deploy using CodeDeploy
       run: |
-
-            aws deploy create-deployment `
-            --application-name strapi-codedeploy-app-bhr `
-            --deployment-group-name strapi-deploy-group-bhr `
-            --revision revisionType=AppSpecContent,appSpecContent={\"content\":"\$appspec\"} `
-            --deployment-config-name CodeDeployDefault.ECSAllAtOnce
-
-
+       aws deploy create-deployment \
+        --application-name strapi-codedeploy-app-bhr \
+       --deployment-group-name strapi-deploy-group-bhr \
+       --revision revisionType=AppSpecContent,appSpecContent="{content=<base64-encoded-appspec.yaml>}" \
+       --deployment-config-name CodeDeployDefault.ECSAllAtOnce
       continue-on-error: true
