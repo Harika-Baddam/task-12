@@ -58,14 +58,10 @@ jobs:
      
     - name: Deploy using CodeDeploy
       run: |
-        aws deploy create-deployment-group \
+       aws deploy create-deployment \
         --application-name strapi-codedeploy-app-bhr \
-        --deployment-group-name strapi-deploy-group-bhr \
-        --service-role-arn arn:aws:iam::607700977843:role/CodeDeployECSRole \
-        --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
-        --deployment-style deploymentType=BLUE_GREEN,deploymentOption=WITH_TRAFFIC_CONTROL \
-        --blue-green-deployment-configuration "terminateBlueInstancesOnDeploymentSuccess={action=TERMINATE,terminationWaitTimeInMinutes=1},deploymentReadyOption={actionOnTimeout=CONTINUE_DEPLOYMENT},greenFleetProvisioningOption={action=DISCOVER_EXISTING}" \
-        --ecs-services serviceName=strapi-service,clusterName=strapi-cluster-bhr \
-        --load-balancer-info "targetGroupPairInfoList=[{targetGroups=[{name=blue-target-group-bhr},{name=bhr-target-group-green}],prodTrafficRoute={listenerArns=[arn:aws:elasticloadbalancing:us-east-2:607700977843:listener/app/app-alb-strapi-bhr/016e96a4ff79501a/dafc6f8b21ed172e]}}]"
+       --deployment-group-name strapi-deploy-group-bhr \
+       --revision revisionType=AppSpecContent,appSpecContent="{content=<base64-encoded-appspec.yaml>}" \
+       --deployment-config-name CodeDeployDefault.ECSAllAtOnce
 
       continue-on-error: true
