@@ -51,17 +51,17 @@ jobs:
         echo "TASK_DEF_ARN=$task_def" >> "$GITHUB_ENV"
     - name: Create appspec.yaml
       run: |
-        @"
-        version: 1.0
-        Resources:
-        - TargetService:
-          Type: AWS::ECS::Service
-          Properties:
-            TaskDefinition: arn:aws:ecs:us-east-2:607700977843:task-definition/strapi-task:264
-            LoadBalancerInfo:
-                 ContainerName: strapi
-                 ContainerPort: 1337
-           "@ | Out-File -Encoding ascii -FilePath "appspec.yaml"
+       cat <<EOF > appspec.yaml
+          version: 1.0
+          Resources:
+            - TargetService:
+                Type: AWS::ECS::Service
+                Properties:
+                  TaskDefinition: ${{ steps.register_task.outputs.task-definition-arn }}
+                  LoadBalancerInfo:
+                    ContainerName: strapi
+                    ContainerPort: 1337
+          EOF
      
     - name: Deploy using CodeDeploy
       run: |
