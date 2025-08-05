@@ -1,0 +1,14 @@
+
+services:
+  strapi:
+    image: 607700977843.dkr.ecr.us-east-2.amazonaws.com/projects-bhr:latest
+    ports:
+      - "1337:1337"
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+    logging:
+     driver: json-file
+    volumes:
+     - ./strapi:/strapi
