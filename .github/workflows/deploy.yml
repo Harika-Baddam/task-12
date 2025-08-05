@@ -84,5 +84,6 @@ jobs:
             --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
             --ecs-services "serviceName=stapi-service,clusterName=strpi-cluster-bhr" \
             --target-group-info "name=bhr-tg" \
-            --revision "revisionType=AppSpecContent,appSpecContent={content=$CONTENT_BASE64}" \
+            --revision-type AppSpecContent \
+            --app-spec-content file://appspec.yaml \
             --description "GitHub Actions Deployment - $IMAGE_TAG"
