@@ -72,7 +72,8 @@ jobs:
     - name: Deploy using CodeDeploy
       run: |
          # 1. Generate base64 content from appspec.yaml
-         $appspec = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes((Get-Content -Raw -Path "appspec.yaml")))
+            appspec_base64=$(base64 -w 0 appspec.yaml)
+            echo "$appspec_base64" > appspec.b64
          # 2. Run the deployment command using the $appspec variable
           aws deploy create-deployment `
           --application-name strapi-codedeploy-app-bhr `
