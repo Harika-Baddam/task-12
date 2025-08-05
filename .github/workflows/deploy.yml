@@ -1,4 +1,4 @@
-name: Deploy to ECS via CodeDeploy
+name: Deploy Strapi to ECS with CodeDeploy
 
 on:
   push:
@@ -7,52 +7,68 @@ on:
 
 env:
   AWS_REGION: us-east-2
+  ECR_REPOSITORY: projects-bhr
   CLUSTER_NAME: strapi-cluster-bhr
   SERVICE_NAME: strapi-service
-  APPLICATION_NAME: strapi-codedeploy-app-bhr
-  DEPLOYMENT_GROUP_NAME: strapi-deploy-group-bhr
+  TASK_DEF_NAME: strapi-task
   CONTAINER_NAME: strapi
-  ECR_REPO: 607700977843.dkr.ecr.us-east-2.amazonaws.com/projects-bhr
+  DEPLOYMENT_GROUP: strapi-deploy-group-bhr
+  APPLICATION_NAME: strapi-codedeploy-app-bhr
 
 jobs:
   deploy:
-    name: Deploy to ECS
     runs-on: ubuntu-latest
-
     steps:
+
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Configure AWS Credentials
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Get Commit SHA
-        id: vars
-        run: echo "IMAGE_TAG=${GITHUB_SHA}" >> $GITHUB_ENV
-
-      - name: Update ECS Task Definition Image
+      - name: Get latest task definition
         id: task-def
         run: |
-          aws ecs describe-task-definition \
-            --task-definition strapi-task \
-            --query taskDefinition > task-def.json
+          aws ecs describe-task-definition --task-definition $TASK_DEF_NAME > task-def.json
 
-          jq '.containerDefinitions[0].image = "607700977843.dkr.ecr.us-east-2.amazonaws.com/projects-bhr:latest"' task-def.json > new-task-def.json
-          jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' new-task-def.json > final-task-def.json
+      - name: Update task definition image
+        id: new-task-def
+        run: |
+          jq --arg IMAGE "607700977843.dkr.ecr.us-east-2.amazonaws.com/projects-bhr:latest:${{ github.sha }}" \
+             '.taskDefinition.containerDefinitions[0].image = $IMAGE' \
+             task-def.json > new-task-def.json
 
-          TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://final-task-def.json --query 'taskDefinition.taskDefinitionArn' --output text)
-          echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
+          NEW_REVISION=$(aws ecs register-task-definition \
+            --cli-input-json file://new-task-def.json \
+            --query "taskDefinition.taskDefinitionArn" \
+            --output text)
 
-          $appspec = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes((Get-Content -Raw -Path "appspec.yaml")))
+          echo "NEW_REVISION=$NEW_REVISION" >> $GITHUB_ENV
 
-      - name: Create CodeDeploy Deployment
+      - name: Create base64 appspec content
+        id: appspec
+        run: |
+          echo 'version: 1.0
+          Resources:
+          - TargetService:
+              Type: AWS::ECS::Service
+            Properties:
+             TaskDefinition: '"$NEW_REVISION"'
+               LoadBalancerInfo:
+                  ContainerName: '"$CONTAINER_NAME"'
+                  ContainerPort: 1337' > appspec.yaml
+
+          ENCODED=$(base64 appspec.yaml | tr -d '\n')
+          echo "APPSPEC_BASE64=$ENCODED" >> $GITHUB_ENV
+
+      - name: Create deployment in CodeDeploy
         run: |
           aws deploy create-deployment \
-            --application-name ${{ env.APPLICATION_NAME }} \
-            --deployment-group-name ${{ env.DEPLOYMENT_GROUP_NAME }} \
-            --revision revisionType=AppSpecContent,appSpecContent="{\"content\":\"$appspec\"}" \
-            --deployment-config-name CodeDeployDefault.ECSAllAtOnce 
+            --application-name $APPLICATION_NAME \
+            --deployment-group-name $DEPLOYMENT_GROUP \
+            --revision revisionType=AppSpecContent,appSpecContent="{content=${{ env.APPSPEC_BASE64 }}}" \
+            --deployment-config-name CodeDeployDefault.ECSAllAtOnce
