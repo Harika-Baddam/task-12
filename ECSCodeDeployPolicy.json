@@ -2,13 +2,15 @@
   "Version": "2012-10-17",
   "Statement": [
     {
+      "Sid": "ECSPermissionsForCodeDeploy",
       "Effect": "Allow",
       "Action": [
         "ecs:DescribeServices",
-        "ecs:DescribeTaskDefinition",
         "ecs:UpdateService",
+        "ecs:DescribeTaskDefinition",
         "ecs:ListTasks",
-        "ecs:DescribeTasks"
+        "ecs:DescribeTasks",
+        "iam:PassRole"
       ],
       "Resource": "*"
     }
