@@ -68,7 +68,7 @@ jobs:
        aws deploy create-deployment `
        --application-name strapi-codedeploy-app-bhr `
        --deployment-group-name strapi-deploy-group-bhr `
-       --revision "revisionType=AppSpecContent,appSpecContent="{content=BASE64_ENCODED_APPSPEC}" `
+       --revision "revisionType=AppSpecContent,appSpecContent="{content=appspec.yaml}" `
         --deployment-config-name CodeDeployDefault.ECSAllAtOnce
 
       continue-on-error: true
