@@ -1,105 +1,61 @@
-name: Deploy Strapi to ECS via CodeDeploy
+name: Deploy to ECS Fargate with CodeDeploy
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 env:
   AWS_REGION: us-east-2
-  AWS_ACCOUNT_ID: "607700977843"
   ECR_REPOSITORY: projects-bhr
   ECS_CLUSTER: strapi-cluster-bhr
   ECS_SERVICE: strapi-service
-  TASK_DEF_FAMILY: strapi-task
-  CODE_DEPLOY_APP: strapi-codedeploy-bhr
-  DEPLOYMENT_GROUP: strapi-deployment-group
+  TASK_DEFINITION_NAME: strapi-task
+  CONTAINER_NAME: strapi
+  CODEDEPLOY_APP: strapi-codedeploy-bhr
+  DEPLOYMENT_GROUP: strapi-deploy-group
+  IMAGE_TAG: ${{ github.sha }}
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    name: Push Image & Deploy via CodeDeploy
+
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        run: aws ecr get-login-password | docker login --username AWS --password-stdin 607700977843.dkr.ecr.us-east-2.amazonaws.com
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build and push Docker image
+      - name: Tag and Push Prebuilt Docker Image
         run: |
-          docker build -t 607700977843.dkr.ecr.us-east-2.amazonaws.com/projects-bhr:latest .
-          docker push 607700977843.dkr.ecr.us-east-2.amazonaws.com/projects-bhr:latest
+          docker tag $ECR_REPOSITORY:latest ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
 
-      - name: Set TASK_DEF_NAME
-        run: echo "TASK_DEF_NAME=ecs-task-def" >> $GITHUB_ENV
- 
-
-      - name: Create new task definition file
+      - name: Create new Task Definition from Template
         run: |
-          aws ecs describe-task-definition \
-          --task-definition arn:aws:ecs:us-east-2:607700977843:task-definition/strapi-task:183
-          cat ecs-task-def.json | jq --arg IMAGE "607700977843.dkr.ecr.us-east-2.amazonaws.com/projects-bhr:latest" \
-            '.taskDefinition.containerDefinitions[0].image = $IMAGE | 
-             {family: .taskDefinition.family, containerDefinitions: .taskDefinition.containerDefinitions, executionRoleArn: .taskDefinition.executionRoleArn, networkMode: .taskDefinition.networkMode, requiresCompatibilities: .taskDefinition.requiresCompatibilities, cpu: .taskDefinition.cpu, memory: .taskDefinition.memory}' > new-task-def.json
-    
-      - name: Save Task Definition
+          sed "s|IMAGE_PLACEHOLDER|${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}|" ecs-task-def.json > task-def-filled.json
+
+      - name: Register Task Definition
+        id: register-task
         run: |
-          cat <<EOF > task-def.json
-          {
-            "family": "strapi-task",
-            "executionRoleArn": "arn:aws:iam::607700977843:role/ecsTaskExecutionRole",
-            "networkMode": "awsvpc",
-            "requiresCompatibilities": ["FARGATE"],
-            "cpu": "512",
-            "memory": "1024",
-            "containerDefinitions": [
-          {
-            "name": "strapi",
-            "image": "607700977843.dkr.ecr.us-east-2.amazonaws.com/projects-bhr:latest",
-            "portMappings": [
-            {
-              "containerPort": 1337,
-              "hostPort": 1337,
-              "protocol": "tcp"
-            }
-          ],
-          "logConfiguration": {
-            "logDriver": "awslogs",
-            "options": {
-              "awslogs-group": "/ecs/strapi",
-              "awslogs-region": "us-east-2",
-              "awslogs-stream-prefix": "strapi"
-            }
-          }
-          }
-          ] 
-          }
-          EOF
-      - name: Register new task definition
+          TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://task-def-filled.json \
+            --query "taskDefinition.taskDefinitionArn" \
+            --output text)
+          echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
+
+      - name: Generate AppSpec file for CodeDeploy
         run: |
-           new_revision_number=$(date +%s)
-           echo "New revision number: $new_revision_number"
-
-           aws ecs register-task-definition \
-           --cli-input-json file://ecs-task-def.json
-
-           aws ecs update-service \
-           --cluster strapi-cluster-bhr \
-           --service strapi-service \
-            --task-definition strapi-task
-
-       
-      - name: Generate appspec file
-        run: |
-          new_revision_number=$(date +%s)
-          echo "Using revision $new_revision_number"
-
           cat <<EOF > appspec.yaml
           version: 1.0
           Resources:
@@ -108,26 +64,35 @@ jobs:
             Properties:
             TaskDefinition: $TASK_DEF_ARN
             LoadBalancerInfo:
-              ContainerName: "$CONTAINER_NAME"
-               ContainerPort: $CONTAINER_PORT
-            EOF
+               ContainerName: ${CONTAINER_NAME}
+               ContainerPort: 1337
+               EOF
 
-      - name: Create ECS Service
+      - name: Deploy with CodeDeploy
+        id: deploy
         run: |
-          new_revision_number=$(date +%s)
-          echo "New revision number: $new_revision_number"
-          aws ecs create-service \
-          --cluster strapi-cluster-bhr \
-          --service-name strapi-service \
-          --task-definition strapi-task:<new_revision_number> \
-          --load-balancers "targetGroupArn=arn:aws:elasticloadbalancing:us-east-2:607700977843:targetgroup/strapi-target-group-bhr/467b00dce5907580,containerName=strapi,containerPort=1337" \
-          --desired-count 1 \
-          --deployment-controller type=CODE_DEPLOY \
-          --launch-type FARGATE \
-          --network-configuration "awsvpcConfiguration={subnets=[subnet-03e27b60efa8df9f0,subnet-024126fd1eb33ec08],securityGroups=[sg-08ec25a813a7da742],assignPublicIp=ENABLED}"
+          aws deploy create-deployment \
+            --application-name strapi-app \
+            --deployment-group-name strapi-codedeploy-app-bhr \
+            --revision revisionType=AppSpecContent,appSpecContent="{content=$(base64 < appspec.yaml | tr -d '\n')}" \
+            --query "deploymentId" --output text > deployment-id.txt
+          DEPLOYMENT_ID=$(cat deployment-id.txt)
+          echo "DEPLOYMENT_ID=$DEPLOYMENT_ID" >> $GITHUB_ENV
 
-
-        continue-on-error: true 
-
-
-
+      - name: Monitor Deployment Status
+        run: |
+          for i in {1..30}; do
+            STATUS=$(aws deploy get-deployment --deployment-id $DEPLOYMENT_ID --query "deploymentInfo.status" --output text)
+            echo "Deployment status: $STATUS"
+            if [ "$STATUS" == "Succeeded" ]; then
+              echo "Deployment succeeded ✅"
+              exit 0
+            elif [ "$STATUS" == "Failed" ] || [ "$STATUS" == "Stopped" ]; then
+              echo "Deployment failed ❌ - triggering rollback"
+              aws deploy stop-deployment --deployment-id $DEPLOYMENT_ID --auto-rollback-enabled
+              exit 1
+            fi
+            sleep 10
+          done
+          echo "Deployment timed out ⏱️"
+          exit 1
