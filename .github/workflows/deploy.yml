@@ -59,11 +59,14 @@ jobs:
 
     - name: Deploy using CodeDeploy
       run: |
-         aws deploy create-deployment \
-         --application-name strapi-codedeploy-app-bhr \
-         --deployment-group-name strapi-deploy-group \
-         --revision revisionType=AppSpecContent,appSpecContent={content=YOUR_FULL_BASE64_STRING_HERE} \
-         --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
-         --description "Deploy from GitHub Actions"
+         aws deploy create-deployment-group `
+         --application-name strapi-codedeploy-app-bhr `
+         --deployment-group-name strapi-deploy-group `
+         --service-role-arn arn:aws:iam::<account-id>:role/CodeDeployECSRole `
+         --deployment-config-name CodeDeployDefault.ECSAllAtOnce `
+         --deployment-style deploymentType=BLUE_GREEN,deploymentOption=WITH_TRAFFIC_CONTROL `
+         --blue-green-deployment-configuration "terminateBlueInstancesOnDeploymentSuccess={action=TERMINATE,terminationWaitTimeInMinutes=1},deploymentReadyOption={actionOnTimeout=CONTINUE_DEPLOYMENT},greenFleetProvisioningOption={action=COPY_AUTO_SCALING_GROUP}" `
+         --ecs-services serviceName=strapi-service,clusterName=strapi-cluster-bhr `
+         --load-balancer-info "targetGroupInfoList=[{name=strapi-target-group-bhr}]"
 
       continue-on-error: true
