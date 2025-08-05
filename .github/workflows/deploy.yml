@@ -40,28 +40,28 @@ jobs:
       run: |
           sed "s|IMAGE_PLACEHOLDER|${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}|" ecs-task-def.json > task-def-filled.json
 
-    - name: Register new ECS task definition
-      id: task_def
+    - name: Register Task Definition
+      id: register-task
       run: |
-        task_def=$(aws ecs register-task-definition \
-          --cli-input-json file://ecs-task-def.json \
-          --query "taskDefinition.taskDefinitionArn" --output text)
-        echo "TASK_DEF_ARN=$task_def" >> "$GITHUB_ENV"
-
-    - name: Create appspec.yaml
+          TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://task-def-filled.json \
+            --query "taskDefinition.taskDefinitionArn" \
+            --output text)
+          echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
+    - name: Generate AppSpec file for CodeDeploy
       run: |
-        cat <<EOF > appspec.yaml
-        version: 1.0
-        Resources:
+          cat <<EOF > appspec.yaml
+          version: 1.0
+          Resources:
           - TargetService:
-              Type: AWS::ECS::Service
-              Properties:
-                TaskDefinition: ${TASK_DEF_ARN}
-                LoadBalancerInfo:
-                  ContainerName: "${{ env.CONTAINER_NAME }}"
-                  ContainerPort: ${{ env.CONTAINER_PORT }}
-        EOF
-         base64 appspec.yaml | tr -d '\n'
+            Type: AWS::ECS::Service
+            Properties:
+            TaskDefinition: $TASK_DEF_ARN
+            LoadBalancerInfo:
+               ContainerName: ${CONTAINER_NAME}
+               ContainerPort: 1337
+               EOF
+            base64 appspec.yaml | tr -d '\n'
      
     - name: Deploy using CodeDeploy
       run: |
