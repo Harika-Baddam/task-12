@@ -66,6 +66,6 @@ jobs:
         --deployment-style deploymentType=BLUE_GREEN,deploymentOption=WITH_TRAFFIC_CONTROL \
         --blue-green-deployment-configuration "terminateBlueInstancesOnDeploymentSuccess={action=TERMINATE,terminationWaitTimeInMinutes=1},deploymentReadyOption={actionOnTimeout=CONTINUE_DEPLOYMENT},greenFleetProvisioningOption={action=DISCOVER_EXISTING}" \
         --ecs-services serviceName=strapi-service,clusterName=strapi-cluster-bhr \
-        --load-balancer-info "targetGroupPairInfoList=[{targetGroups=[{name=strapi-target-group-bhr},{name=bhr-target-group-green}],prodTrafficRoute={listenerArns=[arn:aws:elasticloadbalancing:us-east-2:607700977843:listener/app/app-alb-strapi-bhr/0b6fa7f3d06532e7/dafc6f8b21ed172e]}}]"
+        --load-balancer-info "targetGroupPairInfoList=[{targetGroups=[{name=blue-target-group-bhr},{name=bhr-target-group-green}],prodTrafficRoute={listenerArns=[arn:aws:elasticloadbalancing:us-east-2:607700977843:listener/app/app-alb-strapi-bhr/016e96a4ff79501a/dafc6f8b21ed172e]}}]"
 
       continue-on-error: true
