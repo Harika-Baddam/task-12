@@ -38,7 +38,7 @@ jobs:
 
       - name: Tag and Push Prebuilt Docker Image
         run: |
-          docker tag 607700977843.dkr.ecr.us-east-2.amazonaws.com/projects-bhr:latest ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          docker tag 607700977843.dkr.ecr.us-east-2.amazonaws.com/projects-bhr ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
           docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
 
       - name: Create new Task Definition from Template
