@@ -104,9 +104,10 @@ jobs:
                ContainerPort: $CONTAINER_PORT
             EOF
 
-
-      - name: Create CodeDeploy deployment
+      - name: Create ECS Service
         run: |
+          new_revision_number=$(date +%s)
+          echo "New revision number: $new_revision_number"
           aws ecs create-service \
           --cluster strapi-cluster-bhr \
           --service-name strapi-service \
