@@ -54,6 +54,8 @@ jobs:
                   ContainerName: "${{ env.CONTAINER_NAME }}"
                   ContainerPort: ${{ env.CONTAINER_PORT }}
         EOF
+         base64 appspec.yaml | tr -d '\n'
+
 
     - name: Deploy using CodeDeploy
       run: |
