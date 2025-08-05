@@ -3,19 +3,7 @@ Resources:
 - TargetService:
     Type: AWS::ECS::Service
     Properties:
-      TaskDefinition: "arn:aws:ecs:us-east-2:607700977843:task-definition/strapi-task:42"
+      TaskDefinition: arn:aws:ecs:us-east-2:607700977843:task-definition/strapi-task:264
       LoadBalancerInfo:
-        ContainerName: "strapi"
+        ContainerName: strapi
         ContainerPort: 1337
-      Cluster: "strapi-cluster-bhr"
-      ServiceName: "strapi-service"
-      DesiredCount: 1
-      LaunchType: "FARGATE"
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          Subnets:
-          - "subnet-03e27b60efa8df9f0"
-          - "subnet-024126fd1eb33ec08"
-          SecurityGroups:
-          - "sg-08ec25a813a7da742"
-          AssignPublicIp: ENABLED
