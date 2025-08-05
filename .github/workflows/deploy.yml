@@ -76,13 +76,13 @@ jobs:
 
       - name: Deploy to ECS via CodeDeploy
         run: |
-          echo "Creating deployment for task definition: arn:aws:iam::607700977843:role/ecsTaskExecutionRole"
-          echo "Deploying to ECS with task definition: arn:aws:ecs:us-east-2:607700977843:ecs-task-def/${TASK_DEFINITION}:${TASK_REVISION}"
+          echo "Creating deployment for task definition: arn:aws:iam::$AWS_ACCOUNT_ID:role/ecsTaskExecutionRole"
+          echo "Deploying to ECS with task definition: arn:aws:ecs:us-east-2:$AWS_ACCOUNT_ID:ecs-task-def/..."
             aws deploy create-deployment-group \
             --application-name strapi-codedeploy-bhr \
             --deployment-group-name strapi-codedeploy-group \
             --deployment-config-name CodeDeployDefault.ECSCanary10Percent5Minutes \
-            --service-role-arn arn:aws:iam::<your-account-id>:role/<your-codedeploy-role> \
+            --service-role-arn arn:aws:iam::<AWS-ACCOUNT-ID>:role/<your-codedeploy-role> \
             --ecs-services ecsServiceName=strapi-service,clusterName=strapi-cluster-bhr \
             --region us-east-2 \
             --revision "revisionType=AppSpecContent,appSpecContent={content=$CONTENT_BASE64}" \
