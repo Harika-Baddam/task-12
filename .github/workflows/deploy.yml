@@ -6,7 +6,7 @@ on:
 
 env:
   AWS_REGION: us-east-2
-  AWS_ACCOUNT_ID: 607700977843
+  AWS_ACCOUNT_ID: "607700977843"
   ECR_REPOSITORY: projects-bhr
   ECS_CLUSTER: strapi-cluster-bhr
   ECS_SERVICE: strapi-service
