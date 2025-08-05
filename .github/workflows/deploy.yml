@@ -56,7 +56,12 @@ jobs:
         EOF
          base64 appspec.yaml | tr -d '\n'
 
-
+    - name: Create Codedeployment
+      run: |
+        aws deploy create-application \
+        --application-name strapi-codedeploy-app-bhr \
+        --compute-platform ECS
+     
     - name: Deploy using CodeDeploy
       run: |
          aws deploy create-deployment-group `
