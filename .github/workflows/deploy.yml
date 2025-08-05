@@ -70,8 +70,9 @@ jobs:
       - name: Deploy with CodeDeploy
         id: deploy
         run: |
-          aws deploy create-deployment \
-            --application-name strapi-app \
+          aws deploy create-application \
+          --application-name strapi-app \
+          --compute-platform ECS \
             --deployment-group-name strapi-codedeploy-app-bhr \
             --revision revisionType=AppSpecContent,appSpecContent="{content=$(base64 < appspec.yaml | tr -d '\n')}" \
             --query "deploymentId" --output text > deployment-id.txt
