@@ -62,11 +62,6 @@ jobs:
                     ContainerName: strapi
                     ContainerPort: 1337
           EOF
-          $appspec = [Convert]::ToBase64String(
-         [System.Text.Encoding]::UTF8.GetBytes(
-        (Get-Content -Raw -Path "appspec.yaml")
-       )
-       )
      
     - name: Deploy using CodeDeploy
       run: |
