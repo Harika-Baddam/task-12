@@ -76,12 +76,12 @@ jobs:
 
       - name: Deploy to ECS via CodeDeploy
         run: |
-        
+
             aws deploy create-deployment-group \
             --application-name strapi-codedeploy-bhr \
             --deployment-group-name strapi-codedeploy-group \
             --deployment-config-name CodeDeployDefault.ECSCanary10Percent5Minutes \
-            --service-role-arn arn:aws:iam::<AWS-ACCOUNT-ID>:role/<your-codedeploy-role> \
+            --service-role-arn arn:aws:iam::<AWS-ACCOUNT-ID>:role/my-role \
             --ecs-services ecsServiceName=strapi-service,clusterName=strapi-cluster-bhr \
             --region us-east-2 \
             --revision "revisionType=AppSpecContent,appSpecContent={content=$CONTENT_BASE64}" \
