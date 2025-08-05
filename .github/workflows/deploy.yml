@@ -62,13 +62,18 @@ jobs:
                     ContainerName: strapi
                     ContainerPort: 1337
           EOF
+          $appspec = [Convert]::ToBase64String(
+         [System.Text.Encoding]::UTF8.GetBytes(
+        (Get-Content -Raw -Path "appspec.yaml")
+       )
+       )
      
     - name: Deploy using CodeDeploy
       run: |
        aws deploy create-deployment `
        --application-name strapi-codedeploy-app-bhr `
        --deployment-group-name strapi-deploy-group-bhr `
-       --revision "revisionType=AppSpecContent,appSpecContent="{content=appspec.yaml}" `
+       --revision "revisionType=AppSpecContent,appSpecContent={"\content\":"$((base64 -w 0 appspec.yaml)\"}" `
         --deployment-config-name CodeDeployDefault.ECSAllAtOnce
 
       continue-on-error: true
