@@ -89,7 +89,7 @@ jobs:
 
       - name: Create Codedeploy  Deployment
         run: |    
-           aws ecs create-service \
+            aws deploy create-deployment \
             --cluster strapi-cluster-bhr \
             --service-name strapi-service \
             --task-definition strapi-task: \<new_revision_number>
