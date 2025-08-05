@@ -47,8 +47,6 @@ jobs:
           TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://final-task-def.json --query 'taskDefinition.taskDefinitionArn' --output text)
           echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
 
-      - name: Base64 encode appspec.yaml
-        run: |
           $appspec = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes((Get-Content -Raw -Path "appspec.yaml")))
 
       - name: Create CodeDeploy Deployment
