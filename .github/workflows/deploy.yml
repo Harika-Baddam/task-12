@@ -87,17 +87,31 @@ jobs:
           TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://ecs-task-def.json --query 'taskDefinition.taskDefinitionArn' --output text)
           echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
 
-      - name: Create Codedeploy  Deployment
-        run: |    
-            aws deploy create-deployment \
-            --cluster strapi-cluster-bhr \
-            --service-name strapi-service \
-            --task-definition strapi-task: \<new_revision_number>
-            --load-balancers "targetGroupArn=arn:aws:elasticloadbalancing:us-east-2:607700977843:targetgroup/strapi-target-group-bhr/467b00dce5907580,containerName=strapi,containerPort=1337" \
-            --desired-count 1 \
-            --deployment-controller type=CODE_DEPLOY \
-            --launch-type FARGATE \
-            --network-configuration "awsvpcConfiguration={subnets=[subnet-03e27b60efa8df9f0,subnet-024126fd1eb33ec08],securityGroups=[sg-08ec25a813a7da742],assignPublicIp=ENABLED}"
+      - name: Create CodeDeploy deployment
+        run: |
+          cat <<EOF > appspec.yaml
+          version: 1.0
+          Resources:
+          - TargetService:
+            Type: AWS::ECS::Service
+            Properties:
+             TaskDefinition: $TASK_DEF_ARN
+             LoadBalancerInfo:
+               ContainerName: "$CONTAINER_NAME"
+               ContainerPort: $CONTAINER_PORT
+          EOF
 
-        continue-on-error: true
+          aws deploy create-deployment-group \
+          --application-name strapi-codedeploy-bhr \
+          --deployment-group-name strapi-deploy-group \
+          --service-role-arn arn:aws:iam::607700977843:role/CodeDeployECSRole \
+          --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
+          --deployment-style deploymentType=BLUE_GREEN,deploymentOption=WITH_TRAFFIC_CONTROL \
+          --blue-green-deployment-configuration "terminateBlueInstancesOnDeploymentSuccess={action=TERMINATE,terminationWaitTimeInMinutes=1},deploymentReadyOption={actionOnTimeout=CONTINUE_DEPLOYMENT},greenFleetProvisioningOption={action=COPY_AUTO_SCALING_GROUP}" \
+          --ecs-services serviceName=strapi-service,clusterName=strapi-cluster-bhr \
+          --load-balancer-info '{"targetGroupInfoList":[{"name":"strapi-target-group"}]}'
+
+        continue-on-error: true 
+
+
 
