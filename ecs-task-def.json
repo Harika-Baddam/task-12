@@ -1,6 +1,6 @@
 {
   "family": "strapi-task",
-  "executionRoleArn": "arn:aws:iam::607700977843:role/CodeDeployECSRole",
+  "executionRoleArn": "arn:aws:iam::607700977843:role/ecsTaskExecutionRole",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "512",
@@ -8,7 +8,8 @@
   "containerDefinitions": [
     {
       "name": "strapi",
-      "image": "607700977843.dkr.ecr.us-east-2.amazonaws.com/projects-bhr:latest", 
+      "image": "607700977843.dkr.ecr.us-east-2.amazonaws.com/projects-bhr:latest",
+      "essential": true,
       "portMappings": [
         {
           "containerPort": 1337,

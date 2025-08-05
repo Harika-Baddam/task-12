@@ -77,7 +77,7 @@ jobs:
            aws ecs create-service \
             --cluster strapi-cluster-bhr \
             --service-name strapi-service \
-            --task-definition strapi-task:1 \
+            --task-definition strapi-task: \<new_revision_number>
             --load-balancers "targetGroupArn=arn:aws:elasticloadbalancing:us-east-2:607700977843:targetgroup/strapi-target-group-bhr/467b00dce5907580,containerName=strapi,containerPort=1337" \
             --desired-count 1 \
             --deployment-controller type=CODE_DEPLOY \
