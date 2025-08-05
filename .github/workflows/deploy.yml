@@ -62,10 +62,10 @@ jobs:
         --cluster strapi-cluster-bhr \
         --service-name strapi-service \
         --task-definition strapi-task:264 \
-        --load-balancers targetGroupArn=arn:aws:elasticloadbalancing:us-east-2:607700977843:targetgroup/strapi-target-group-bhr/467b00dce5907580,containerName=strapi,containerPort=1337 \
+        --load-balancers "targetGroupArn=arn:aws:elasticloadbalancing:us-east-2:607700977843:targetgroup/strapi-target-group-bhr/467b00dce5907580,containerName=strapi,containerPort=1337" \
         --desired-count 1 \
         --deployment-controller type=CODE_DEPLOY \
         --launch-type FARGATE \
-        --network-configuration "awsvpcConfiguration={subnets=[subnet-03e27b60efa8df9f0,subnet-024126fd1eb33ec08],securityGroups=[sg-xxxxxxxx],assignPublicIp=ENABLED}"
+        --network-configuration "awsvpcConfiguration={subnets=[subnet-03e27b60efa8df9f0,subnet-024126fd1eb33ec08],securityGroups=[sg-08ec25a813a7da742],assignPublicIp=ENABLED}"
 
       continue-on-error: true
