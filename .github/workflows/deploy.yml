@@ -67,16 +67,14 @@ jobs:
                ContainerName: ${CONTAINER_NAME}
                ContainerPort: 1337
                EOF
-            base64 appspec.yaml | tr -d '\n'
      
     - name: Deploy using CodeDeploy
       run: |
-            appspec_base64=$(base64 -w 0 appspec.yaml)
 
             aws deploy create-deployment `
             --application-name strapi-codedeploy-app-bhr `
             --deployment-group-name strapi-deploy-group-bhr `
-            --revision revisionType=AppSpecContent,appSpecContent={\"content\":"\$appspec_base64\"} `
+            --revision revisionType=AppSpecContent,appSpecContent={\"content\":"\$appspec\"} `
             --deployment-config-name CodeDeployDefault.ECSAllAtOnce
 
 
