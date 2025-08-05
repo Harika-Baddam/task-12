@@ -92,8 +92,10 @@ jobs:
               ContainerPort: 1337
                EOF
            )
-           aws deploy create-deployment \
-            --application-name StrapiApp \
-            --deployment-group-name StrapiAppDeploymentGroup \
-            --revision revisionType=AppSpecContent,appSpecContent="{content=\"$DEPLOY_SPEC\"}" \
-            --description "GitHub Actions Deployment"
+           aws deploy create-deployment-group \
+           --application-name StrapiApp \
+           --deployment-group-name StrapiAppDeploymentGroup \
+           --service-role-arn arn:aws:iam::607700977843:role/CodeDeployServiceRole \
+           --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
+           --ecs-services serviceName=bhr-strapi-service,clusterName=strapi-cluster-bhr \
+           --load-balancer-info targetGroupInfoList=[{name=bhr-tg}]
