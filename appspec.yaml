@@ -3,7 +3,7 @@ Resources:
 - TargetService:
     Type: AWS::ECS::Service
     Properties:
-      TaskDefinition: "arn:aws:iam::$AWS_ACCOUNT_ID:role/ecsTaskExecutionRole/strapi-task:${{ steps.build.outputs.revision }}"
+      TaskDefinition: "arn:aws:iam::$AWS_ACCOUNT_ID:role/CodeDeployECSRole/strapi-task:${{ steps.build.outputs.revision }}"
       LoadBalancerInfo:
         ContainerName: "strapi"
         ContainerPort: 1337 >>appspec.yaml
