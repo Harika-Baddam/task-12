@@ -62,7 +62,22 @@ jobs:
                     ContainerName: strapi
                     ContainerPort: 1337
           EOF
-     
+    - name: Push appspec and revision.json to S3 (Optional)
+      run: |
+          cat <<EOF > revision.json
+          {
+              "applicationName": "${CODEDEPLOY_APP}",
+              "deploymentGroupName": "${DEPLOYMENT_GROUP}",
+               "revision": {
+                "revisionType": "AppSpecContent",
+                 "appSpecContent": {
+                 "content": "$(base64 < appspec.yaml | tr -d '\n')",
+                "sha256": "$(openssl dgst -sha256 -binary appspec.yaml | openssl base64)"
+               }
+              }
+            }
+           EOF
+           
     - name: Deploy using CodeDeploy
       run: |
        aws deploy create-deployment `
