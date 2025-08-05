@@ -73,12 +73,10 @@ jobs:
       run: |
          # 1. Generate base64 content from appspec.yaml
             appspec_base64=$(base64 -w 0 appspec.yaml)
-            echo "$appspec_base64" > appspec.b64
-         # 2. Run the deployment command using the $appspec variable
           aws deploy create-deployment `
           --application-name strapi-codedeploy-app-bhr `
           --deployment-group-name strapi-deploy-group-bhr `
-          --revision "revisionType=AppSpecContent,appSpecContent={""content"":""$appspec""}" `
+          --revision "revisionType=AppSpecContent,appSpecContent={""content"":""$appspec_base64""}" `
           --deployment-config-name CodeDeployDefault.ECSAllAtOnce
 
 
