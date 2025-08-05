@@ -59,10 +59,10 @@ jobs:
 
     - name: Deploy using CodeDeploy
       run: |
-        aws deploy create-deployment \
-          --application-name ${{ env.DEPLOYMENT_APP_NAME }} \
-          --deployment-group-name ${{ env.DEPLOYMENT_GROUP_NAME }} \
-          --revision revisionType=AppSpecContent,appSpecContent="{\"content\":\"$(base64 appspec.yaml | tr -d '\n')\"}" \
+         aws deploy create-deployment \
+         --application-name strapi-codedeploy-app-bhr \
+         --deployment-group-name strapi-deploy-group \
+         --revision revisionType=AppSpecContent,appSpecContent={content=dmVyc2lvbjogMS4wClJlc291cmNlczoKICAtIFRhcmdldFNlcnZpY2U6CiAgICAgIFR5cGU6IEFXUzo6RUNTOjpTZXJ2aWNlCiAgICAgIFByb3BlcnRpZXM6CiAgICAgICAgVGFza0RlZmluaXRpb246IGFybjphd3M6ZWNzOnVzLWVhc3QtMjo2MDc3MDA5Nzc4NDM6dGFzay1kZWZpbml0aW9uL3N0cmFwaS10
           --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
           --description "GitHub Actions deployment"
       continue-on-error: true
