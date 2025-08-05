@@ -86,4 +86,4 @@ jobs:
             --target-group-info "name=bhr-tg" \
             --revision-type AppSpecContent \
             --app-spec-content file://appspec.yaml \
-            --description "GitHub Actions Deployment - $IMAGE_TAG"
+            --description "GitHub Actions Deployment"
