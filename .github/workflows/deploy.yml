@@ -86,21 +86,27 @@ jobs:
         run: |
           TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://ecs-task-def.json --query 'taskDefinition.taskDefinitionArn' --output text)
           echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
-
-      - name: Create CodeDeploy deployment
+       
+      - name: Generate appspec file
         run: |
+          new_revision_number=$(date +%s)
+          echo "Using revision $new_revision_number"
+
           cat <<EOF > appspec.yaml
           version: 1.0
           Resources:
           - TargetService:
             Type: AWS::ECS::Service
             Properties:
-             TaskDefinition: $TASK_DEF_ARN
-             LoadBalancerInfo:
-               ContainerName: "$CONTAINER_NAME"
+            TaskDefinition: $TASK_DEF_ARN
+            LoadBalancerInfo:
+              ContainerName: "$CONTAINER_NAME"
                ContainerPort: $CONTAINER_PORT
-          EOF
+            EOF
 
+
+      - name: Create CodeDeploy deployment
+        run: |
           aws ecs create-service \
           --cluster strapi-cluster-bhr \
           --service-name strapi-service \
