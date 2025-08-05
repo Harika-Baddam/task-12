@@ -70,19 +70,77 @@ jobs:
       - name: Deploy with CodeDeploy
         id: deploy
         run: |
-          aws deploy create-deployment \
+          aws deploy create-application \
           --application-name strapi-codedeploy-app-bhr \
-          --deployment-group-name strapi-deploy-group \
-          --revision '{
-            "revisionType": "AppSpecContent",
-            "appSpecContent": {
-            "content": "dmVyc2lvbjogMS4wClJlc291cmNlczoKLSBUYXJnZXRTZXJ2aWNlOgogIFR5cGU6IEFXUzo6RUNTOjpTZXJ2aWNlCiAgUHJvcGVydGllczoKICBUYXNrRGVmaW5pdGlvbjogYXJuOmF3czplY3M6dXMtZWFzdC0yOjYwNzcwMDk3Nzg0Mzp0YXNrLWRlZmluaXRpb24vc3RyYXBpLXRhc2s6MjYxCiAgTG9hZEJhbGFuY2VySW5mbzoKICAgICBDb250YWluZXJOYW1lOiBzdHJhcGkKICAgICBDb250YWluZXJQb3J0OiAxMzM3CiAgICAgRU9GCg=="
-          }
-          }'
+          --compute-platform ECS
+      name: Deploy to ECS via CodeDeploy
 
+on:
+  push:
+    branches: [main]
 
-      - name: Monitor Deployment Status
-        run: |
+env:
+  AWS_REGION: us-east-2
+  CLUSTER_NAME: strapi-cluster-bhr
+  SERVICE_NAME: strapi-service
+  TASK_DEF_NAME: strapi-task
+  CONTAINER_NAME: strapi
+  CONTAINER_PORT: 1337
+  DEPLOYMENT_GROUP_NAME: strapi-deploy-group
+  DEPLOYMENT_APP_NAME: strapi-codedeploy-app-bhr
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Get new image tag (commit SHA)
+      id: new_tag
+      run: echo "tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+    - name: Register new ECS task definition
+      id: task_def
+      run: |
+        task_def=$(aws ecs register-task-definition \
+          --cli-input-json file://ecs-task-def.json \
+          --query "taskDefinition.taskDefinitionArn" --output text)
+        echo "TASK_DEF_ARN=$task_def" >> "$GITHUB_ENV"
+
+    - name: Create appspec.yaml
+      run: |
+        cat <<EOF > appspec.yaml
+        version: 1.0
+        Resources:
+          - TargetService:
+              Type: AWS::ECS::Service
+              Properties:
+                TaskDefinition: ${TASK_DEF_ARN}
+                LoadBalancerInfo:
+                  ContainerName: "${{ env.CONTAINER_NAME }}"
+                  ContainerPort: ${{ env.CONTAINER_PORT }}
+        EOF
+
+    - name: Deploy using CodeDeploy
+      run: |
+        aws deploy create-deployment \
+          --application-name ${{ env.DEPLOYMENT_APP_NAME }} \
+          --deployment-group-name ${{ env.DEPLOYMENT_GROUP_NAME }} \
+          --revision revisionType=AppSpecContent,appSpecContent="{\"content\":\"$(base64 appspec.yaml | tr -d '\n')\"}" \
+          --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
+          --description "GitHub Actions deployment"
+
+    - name: Monitor Deployment Status
+      run: |
           for i in {1..30}; do
             STATUS=$(aws deploy get-deployment --deployment-id $DEPLOYMENT_ID --query "deploymentInfo.status" --output text)
             echo "Deployment status: $STATUS"
