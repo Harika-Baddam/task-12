@@ -49,13 +49,12 @@ jobs:
 
       - name: Base64 encode appspec.yaml
         run: |
-          ENCODED_APPSPEC=$(base64 -w 0 appspec.yaml)
-          echo "ENCODED_APPSPEC=$ENCODED_APPSPEC" >> $GITHUB_ENV
+          $appspec = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes((Get-Content -Raw -Path "appspec.yaml")))
 
       - name: Create CodeDeploy Deployment
         run: |
           aws deploy create-deployment \
             --application-name ${{ env.APPLICATION_NAME }} \
             --deployment-group-name ${{ env.DEPLOYMENT_GROUP_NAME }} \
-            --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
-            --revision revisionType=AppSpecContent,appSpecContent="{content=${{ env.ENCODED_APPSPEC }}}"
+            --revision revisionType=AppSpecContent,appSpecContent="{\"content\":\"$appspec\"}" \
+            --deployment-config-name CodeDeployDefault.ECSAllAtOnce 
