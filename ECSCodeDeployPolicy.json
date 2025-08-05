@@ -2,7 +2,7 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "AllowECSAccess",
+      "Sid": "AllowECSPermissionsForCodeDeploy",
       "Effect": "Allow",
       "Action": [
         "ecs:DescribeServices",
@@ -14,7 +14,7 @@
       "Resource": "*"
     },
     {
-      "Sid": "AllowIAMPassRole",
+      "Sid": "AllowPassRoleToECSTasks",
       "Effect": "Allow",
       "Action": "iam:PassRole",
       "Resource": "*",
