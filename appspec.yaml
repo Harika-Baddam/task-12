@@ -3,10 +3,10 @@ Resources:
 - TargetService:
     Type: AWS::ECS::Service
     Properties:
-      TaskDefinition: "arn:aws:iam::$AWS_ACCOUNT_ID:role/CodeDeployECSRole/strapi-task:${{ steps.build.outputs.revision }}"
+      TaskDefinition: "arn:aws:ecs:us-east-1:123456789012:task-definition/strapi-task:42"
       LoadBalancerInfo:
         ContainerName: "strapi"
-        ContainerPort: 1337 >>appspec.yaml
+        ContainerPort: 1337
       Cluster: "strapi-cluster-bhr"
       ServiceName: "strapi-service"
       DesiredCount: 1
@@ -14,8 +14,8 @@ Resources:
       NetworkConfiguration:
         AwsvpcConfiguration:
           Subnets:
-          - "subnet-aws_subnet.public1.id" # Replace with your subnet ID
-          - "subnet-aws_subnet.public2.id" # Replace with your subnet ID
+          - "subnet-03e27b60efa8df9f0"
+          - "subnet-024126fd1eb33ec08"
           SecurityGroups:
-          - "sg-xxxxx" # Replace with your security group ID
+          - "sg-08ec25a813a7da742"
           AssignPublicIp: ENABLED
