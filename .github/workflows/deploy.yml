@@ -6,6 +6,7 @@ on:
 
 env:
   AWS_REGION: us-east-2
+  AWS_ACCOUNT_ID: 607700977843
   ECR_REPOSITORY: projects-bhr
   ECS_CLUSTER: strapi-cluster-bhr
   ECS_SERVICE: strapi-service
@@ -76,7 +77,7 @@ jobs:
       - name: Deploy to ECS via CodeDeploy
         run: |
           echo "Creating deployment for task definition: arn:aws:iam::607700977843:role/ecsTaskExecutionRole"
-          echo "Deploying to ECS with task definition: arn:aws:ecs:us-east-2:607700977843:task-definition/${TASK_DEFINITION}:${TASK_REVISION}"
+          echo "Deploying to ECS with task definition: arn:aws:ecs:us-east-2:607700977843:ecs-task-def/${TASK_DEFINITION}:${TASK_REVISION}"
             aws deploy create-deployment-group \
             --application-name strapi-codedeploy-bhr \
             --deployment-group-name strapi-codedeploy-group \
