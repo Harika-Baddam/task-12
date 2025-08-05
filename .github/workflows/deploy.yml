@@ -75,8 +75,6 @@ jobs:
 
       - name: Deploy to ECS via CodeDeploy
         run: |
-          CONTENT_BASE64=$(base64 appspec.yaml | tr -d '\n')
-          echo "CONTENT_BASE64=$CONTENT_BASE64" >> $GITHUB_ENV
           echo "Deploying to ECS with task definition: $TASK_DEF_ARN"
             aws deploy create-deployment-group \
             --application-name strapi-codedeploy-bhr \
