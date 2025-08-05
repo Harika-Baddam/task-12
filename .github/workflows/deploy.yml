@@ -76,8 +76,8 @@ jobs:
       - name: Deploy to ECS via CodeDeploy
         run: |
          
-            echo "Creating deployment with new image: 607700977843.dkr.ecr.us-east-2.amazonaws.com/projects-bhr:latest"
-            echo "Using Task Definition: arn:aws:iam::607700977843:role/ecsTaskExecutionRole/strapi-task:${{ steps.build.outputs.revision }}
+            echo {"Creating deployment with new image: 607700977843.dkr.ecr.us-east-2.amazonaws.com/projects-bhr:latest"}
+            echo { "Using Task Definition: arn:aws:iam::607700977843:role/ecsTaskExecutionRole/strapi-task:${{ steps.build.outputs.revision }}}"
             aws deploy create-deployment-group \
             --application-name strapi-codedeploy-bhr \
             --deployment-group-name strapi-codedeploy-group \
