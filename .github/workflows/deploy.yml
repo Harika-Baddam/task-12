@@ -70,14 +70,16 @@ jobs:
       - name: Deploy with CodeDeploy
         id: deploy
         run: |
-          aws deploy create-application \
-          --application-name strapi-app \
-          --compute-platform ECS \
-            --deployment-group-name strapi-codedeploy-app-bhr \
-            --revision revisionType=AppSpecContent,appSpecContent="{content=$(base64 < appspec.yaml | tr -d '\n')}" \
-            --query "deploymentId" --output text > deployment-id.txt
-          DEPLOYMENT_ID=$(cat deployment-id.txt)
-          echo "DEPLOYMENT_ID=$DEPLOYMENT_ID" >> $GITHUB_ENV
+          aws deploy create-deployment \
+          --application-name strapi-codedeploy-app-bhr \
+          --deployment-group-name strapi-deploy-group \
+          --revision '{
+            "revisionType": "AppSpecContent",
+            "appSpecContent": {
+            "content": "dmVyc2lvbjogMS4wClJlc291cmNlczoKLSBUYXJnZXRTZXJ2aWNlOgogIFR5cGU6IEFXUzo6RUNTOjpTZXJ2aWNlCiAgUHJvcGVydGllczoKICBUYXNrRGVmaW5pdGlvbjogYXJuOmF3czplY3M6dXMtZWFzdC0yOjYwNzcwMDk3Nzg0Mzp0YXNrLWRlZmluaXRpb24vc3RyYXBpLXRhc2s6MjYxCiAgTG9hZEJhbGFuY2VySW5mbzoKICAgICBDb250YWluZXJOYW1lOiBzdHJhcGkKICAgICBDb250YWluZXJQb3J0OiAxMzM3CiAgICAgRU9GCg=="
+          }
+          }'
+
 
       - name: Monitor Deployment Status
         run: |
