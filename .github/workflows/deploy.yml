@@ -1,4 +1,4 @@
-ame: Deploy to ECS via CodeDeploy
+name: Deploy to ECS via CodeDeploy
 
 on:
   push:
