@@ -44,10 +44,16 @@ jobs:
           jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' new-task-def.json > final-task-def.json
           TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://final-task-def.json --query 'taskDefinition.taskDefinitionArn' --output text)
           echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
+      
+      - name: Inject Task Definition ARN into appspec.yaml
+        run: |
+          sed "s|REPLACE_TASK_DEFINITION_ARN|${{ env.TASK_DEF_ARN }}|g" appspec.template.yaml > appspec.yaml
+
       - name: Base64 encode appspec.yaml
         run: |
-          ENCODED_APPSPEC=$(base64 -w 0 appspec.yaml)
-          echo "ENCODED_APPSPEC=$ENCODED_APPSPEC" >> $GITHUB_ENV
+          echo "ENCODED_APPSPEC=$(base64 -w 0 appspec.yaml)" >> $GITHUB_ENV
+
+
       - name: Create CodeDeploy Deployment
         run: |
           aws deploy create-deployment \
